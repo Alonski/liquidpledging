@@ -11,8 +11,11 @@ contract LiquidPledging is LiquidPledgingBase {
 //////
 
     // This constructor  also calls the constructor for `LiquidPledgingBase`
-    function LiquidPledging(address _vault) LiquidPledgingBase(_vault) {
-    }
+    function LiquidPledging(address _vault) public LiquidPledgingBase(_vault) {}
+
+//////
+// Methods
+//////
 
     /// @notice This is how value enters into the system which creates pledges;
     ///  the token of value goes into the vault and the amount in the pledge
@@ -21,10 +24,9 @@ contract LiquidPledging is LiquidPledgingBase {
     /// @param idGiver Identifier of the giver thats donating.
     /// @param idReceiver To whom it's transfered. Can be the same giver, another
     ///  giver, a delegate or a project
-
-function donate(uint64 idGiver, uint64 idReceiver) payable {
+    function donate(uint64 idGiver, uint64 idReceiver) public payable {
         if (idGiver == 0) {
-            idGiver = addGiver('', '', 259200, ILiquidPledgingPlugin(0x0)); // default to 3 day commitTime
+            idGiver = addGiver("", "", 259200, ILiquidPledgingPlugin(0x0)); // default to 3 day commitTime
         }
 
         PledgeAdmin storage sender = findAdmin(idGiver);
@@ -63,7 +65,7 @@ function donate(uint64 idGiver, uint64 idReceiver) payable {
     /// @param amount Quantity of value that's being moved
     /// @param idReceiver Destination of the value, can be a giver sending to a giver or
     ///  a delegate, a delegate to another delegate or a project to precommit it to that project
-    function transfer(uint64 idSender, uint64 idPledge, uint amount, uint64 idReceiver) {
+    function transfer(uint64 idSender, uint64 idPledge, uint amount, uint64 idReceiver) public {
 
         idPledge = normalizePledge(idPledge);
 
@@ -123,7 +125,7 @@ function donate(uint64 idGiver, uint64 idReceiver) payable {
                 // this is interesting because the delegate undelegates from the
                 // delegates that delegated to this delegate... game theory issues? should this be allowed
                 } else if (receiverDIdx <= senderDIdx) {
-                    undelegate(idPledge, amount, n.delegationChain.length - receiverDIdx -1);
+                    undelegate(idPledge, amount, n.delegationChain.length - receiverDIdx - 1);
                 }
                 return;
             }
@@ -145,7 +147,7 @@ function donate(uint64 idGiver, uint64 idReceiver) payable {
     ///  the Ether.
     /// @param idPledge Id of the pledge that wants to be withdrawn.
     /// @param amount Quantity of Ether that wants to be withdrawn.
-    function withdraw(uint64 idPledge, uint amount) {
+    function withdraw(uint64 idPledge, uint amount) public {
 
         idPledge = normalizePledge(idPledge);
 
@@ -174,7 +176,7 @@ function donate(uint64 idGiver, uint64 idReceiver) payable {
     /// @notice Method called by the vault to confirm a payment.
     /// @param idPledge Id of the pledge that wants to be withdrawn.
     /// @param amount Quantity of Ether that wants to be withdrawn.
-    function confirmPayment(uint64 idPledge, uint amount) onlyVault {
+    function confirmPayment(uint64 idPledge, uint amount) public onlyVault {
         Pledge storage n = findPledge(idPledge);
 
         require(n.paymentState == PaymentState.Paying);
@@ -197,7 +199,7 @@ function donate(uint64 idGiver, uint64 idReceiver) payable {
     /// @notice Method called by the vault to cancel a payment.
     /// @param idPledge Id of the pledge that wants to be canceled for withdraw.
     /// @param amount Quantity of Ether that wants to be rolled back.
-    function cancelPayment(uint64 idPledge, uint amount) onlyVault {
+    function cancelPayment(uint64 idPledge, uint amount) public onlyVault {
         Pledge storage n = findPledge(idPledge);
 
         require(n.paymentState == PaymentState.Paying); //TODO change to revert
@@ -472,7 +474,7 @@ function donate(uint64 idGiver, uint64 idReceiver) payable {
 
         allowedAmount = callPlugin(before, n.owner, fromPledge, toPledge, offset, allowedAmount);
 
-        for (uint64 i=0; i<n.delegationChain.length; i++) {
+        for (uint64 i = 0; i < n.delegationChain.length; i++) {
             allowedAmount = callPlugin(before, n.delegationChain[i], fromPledge, toPledge, offset + i+1, allowedAmount);
         }
 

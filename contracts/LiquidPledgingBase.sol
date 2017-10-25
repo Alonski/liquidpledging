@@ -5,8 +5,8 @@ import "./ILiquidPledgingPlugin.sol";
 /// @dev This is declares a few functions from `Vault` so that the
 ///  `LiquidPledgingBase` contract can interface with the `Vault` contract
 contract Vault {
-    function authorizePayment(bytes32 _ref, address _dest, uint _amount);
-    function () payable;
+    function authorizePayment(bytes32 _ref, address _dest, uint _amount) public;
+    function () public payable;
 }
 
 contract LiquidPledgingBase {
@@ -65,7 +65,7 @@ contract LiquidPledgingBase {
 
     /// @notice The Constructor creates the `LiquidPledgingBase` on the blockchain
     /// @param _vault Where the ETH is stored that the pledges represent
-    function LiquidPledgingBase(address _vault) {
+    function LiquidPledgingBase(address _vault) public {
         admins.length = 1; // we reserve the 0 admin
         pledges.length = 1; // we reserve the 0 pledge
         vault = Vault(_vault);
@@ -73,12 +73,13 @@ contract LiquidPledgingBase {
 
 
 ///////
-// Adminss functions
+// Admins functions
 //////
 
     /// @notice Creates a giver.
     function addGiver(string name, string url, uint64 commitTime, ILiquidPledgingPlugin plugin
-        ) returns (uint64 idGiver) {
+        ) public returns (uint64 idGiver)
+    {
 
         idGiver = uint64(admins.length);
 
@@ -98,13 +99,9 @@ contract LiquidPledgingBase {
     event GiverAdded(uint64 indexed idGiver);
 
     ///@notice Changes the address, name or commitTime associated with a specific giver
-    function updateGiver(
-        uint64 idGiver,
-        address newAddr,
-        string newName,
-        string newUrl,
-        uint64 newCommitTime)
+    function updateGiver(uint64 idGiver, address newAddr, string newName, string newUrl, uint64 newCommitTime) public
     {
+        
         PledgeAdmin storage giver = findAdmin(idGiver);
         require(giver.adminType == PledgeAdminType.Giver); //Must be a Giver
         require(giver.addr == msg.sender); //current addr had to originate this tx
@@ -118,7 +115,7 @@ contract LiquidPledgingBase {
     event GiverUpdated(uint64 indexed idGiver);
 
     /// @notice Creates a new Delegate
-    function addDelegate(string name, string url, uint64 commitTime, ILiquidPledgingPlugin plugin) returns (uint64 idDelegate) { //TODO return index number
+    function addDelegate(string name, string url, uint64 commitTime, ILiquidPledgingPlugin plugin) public returns (uint64 idDelegate) { //TODO return index number
 
         idDelegate = uint64(admins.length);
 
@@ -138,12 +135,8 @@ contract LiquidPledgingBase {
     event DelegateAdded(uint64 indexed idDelegate);
 
     ///@notice Changes the address, name or commitTime associated with a specific delegate
-    function updateDelegate(
-        uint64 idDelegate,
-        address newAddr,
-        string newName,
-        string newUrl,
-        uint64 newCommitTime) {
+    function updateDelegate(uint64 idDelegate, address newAddr, string newName, string newUrl, uint64 newCommitTime) public 
+    {
         PledgeAdmin storage delegate = findAdmin(idDelegate);
         require(delegate.adminType == PledgeAdminType.Delegate);
         require(delegate.addr == msg.sender);
